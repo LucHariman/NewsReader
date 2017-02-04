@@ -18,6 +18,7 @@ import java.util.List;
 
 public class News {
 
+    private Long id;
     private final String url;
     private String title;
     private String description;
@@ -28,8 +29,24 @@ public class News {
         this.url = url;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
     public String getTitle() {
         return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getDescription() {
@@ -38,6 +55,10 @@ public class News {
 
     public Uri getLink() {
         return link;
+    }
+
+    public List<RSSItem> getPosts() {
+        return posts;
     }
 
     public void load(@NonNull final ResultListener resultListener) {
@@ -49,8 +70,8 @@ public class News {
                 try {
                     RSSFeed feed = reader.load(url);
                     return feed;
-                } catch (RSSReaderException e) {
-                    return e;
+                } catch (Throwable t) {
+                    return t;
                 }
             }
 
