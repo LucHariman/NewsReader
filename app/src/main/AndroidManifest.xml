@@ -9,7 +9,8 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme"
+        android:name=".NewsReaderApplication">
         <activity android:name=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:label="@string/app_name">
@@ -29,6 +30,9 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
         </activity>
+        <receiver android:name=".AlarmReceiver" />
+        <activity android:name=".NewsDetailsActivity"
+            android:theme="@style/AppTheme.NoActionBar.Dark" />
     </application>
 
 </manifest>

@@ -1,5 +1,7 @@
 package com.luc_hariman.newsreader;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Build;
@@ -60,6 +62,7 @@ public class SettingsActivity extends AppCompatActivity {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 mNewsRepository.delete(news);
+                                news.removeAlarm(SettingsActivity.this);
                                 refreshList();
                             }
                         })
@@ -133,6 +136,9 @@ public class SettingsActivity extends AppCompatActivity {
                         news.setNotificationHour(hour);
                         news.setNotificationMinute(minute);
                         mNewsRepository.save(news);
+
+                        news.updateAlarm(SettingsActivity.this);
+
                         refreshList();
                         news.load(new News.ResultListener() {
                             @Override

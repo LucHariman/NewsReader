@@ -1,8 +1,16 @@
 package com.luc_hariman.newsreader.model;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
+
+import com.luc_hariman.newsreader.AlarmReceiver;
+import com.luc_hariman.newsreader.MainActivity;
+import com.luc_hariman.newsreader.SettingsActivity;
 
 import org.mcsoxford.rss.RSSFeed;
 import org.mcsoxford.rss.RSSItem;
@@ -112,6 +120,30 @@ public class News {
                 }
             }
         }.execute();
+    }
+
+    public void removeAlarm(Context context) {
+        if (isNotificationEnabled()) {
+            notificationHour = null;
+            notificationMinute = null;
+            updateAlarm(context);
+        }
+    }
+
+    public void updateAlarm(Context context) {
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(context, AlarmReceiver.class);
+        intent.putExtra(AlarmReceiver.NEWS_ID, id);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+        if (isNotificationEnabled()) {
+            alarmManager.setInexactRepeating(
+                    AlarmManager.RTC_WAKEUP,
+                    (notificationHour * 60 + notificationMinute) * 60000,
+                    AlarmManager.INTERVAL_DAY,
+                    pendingIntent);
+        } else {
+            alarmManager.cancel(pendingIntent);
+        }
     }
 
     public interface ResultListener {

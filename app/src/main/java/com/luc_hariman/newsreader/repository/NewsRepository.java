@@ -31,23 +31,39 @@ public class NewsRepository {
         List<News> result = new ArrayList<>();
         if (cursor.moveToFirst()) {
             do {
-                News news = new News(cursor.getString(cursor.getColumnIndex("url")));
-                news.setId(cursor.getLong(cursor.getColumnIndex("id")));
-                news.setTitle(cursor.getString(cursor.getColumnIndex("title")));
-                String notify = cursor.getString(cursor.getColumnIndex("notify"));
-                Integer notificationHour = null, notificationMinute = null;
-                if (!TextUtils.isEmpty(notify)) {
-                    String[] time = notify.split(":");
-                    notificationHour = Integer.valueOf(time[0]);
-                    notificationMinute = Integer.valueOf(time[1]);
-                }
-                news.setNotificationHour(notificationHour);
-                news.setNotificationMinute(notificationMinute);
-                result.add(news);
+                result.add(newsFromCursor(cursor));
             } while (cursor.moveToNext());
         }
         cursor.close();
         db.close();
+        return result;
+    }
+
+    public News getById(Long newsId) {
+        SQLiteDatabase db = mDatabaseHandler.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_NAME, null, "id = ?", new String[] { String.valueOf(newsId) }, null, null, null);
+        News result = null;
+        if (cursor.moveToFirst()) {
+            result = newsFromCursor(cursor);
+        }
+        cursor.close();
+        db.close();
+        return result;
+    }
+
+    private News newsFromCursor(Cursor cursor) {
+        News result = new News(cursor.getString(cursor.getColumnIndex("url")));
+        result.setId(cursor.getLong(cursor.getColumnIndex("id")));
+        result.setTitle(cursor.getString(cursor.getColumnIndex("title")));
+        String notify = cursor.getString(cursor.getColumnIndex("notify"));
+        Integer notificationHour = null, notificationMinute = null;
+        if (!TextUtils.isEmpty(notify)) {
+            String[] time = notify.split(":");
+            notificationHour = Integer.valueOf(time[0]);
+            notificationMinute = Integer.valueOf(time[1]);
+        }
+        result.setNotificationHour(notificationHour);
+        result.setNotificationMinute(notificationMinute);
         return result;
     }
 
@@ -76,4 +92,5 @@ public class NewsRepository {
         db.delete(TABLE_NAME, "id = ?", new String[] { String.valueOf(news.getId()) });
         db.close();
     }
+
 }
