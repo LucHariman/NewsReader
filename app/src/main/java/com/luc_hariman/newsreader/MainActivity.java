@@ -2,6 +2,7 @@ package com.luc_hariman.newsreader;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -9,8 +10,12 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -18,15 +23,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.luc_hariman.newsreader.model.News;
 import com.luc_hariman.newsreader.repository.NewsRepository;
+import com.squareup.picasso.Picasso;
 
 import org.mcsoxford.rss.RSSItem;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -62,9 +72,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mDrawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
 
-        ListView listView = (ListView) findViewById(R.id.list_view);
-        mAdapter = new PostListAdapter(this, postList);
-        listView.setAdapter(mAdapter);
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mAdapter = new PostListAdapter(postList);
+        recyclerView.setAdapter(mAdapter);
 
     }
 
@@ -117,6 +129,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public void onSuccess(News news) {
                 postList.clear();
                 postList.addAll(news.getPosts());
+                Collections.sort(postList, new Comparator<RSSItem>() {
+                    @Override
+                    public int compare(RSSItem o1, RSSItem o2) {
+                        return o2.getPubDate().compareTo(o1.getPubDate());
+                    }
+                });
                 mAdapter.notifyDataSetChanged();
             }
 
@@ -169,41 +187,62 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
-    private static class PostListAdapter extends BaseAdapter {
+    private static class PostListAdapter extends RecyclerView.Adapter<PostListAdapter.ViewHolder> {
 
-        private final Context mContext;
         private List<RSSItem> mPostList;
 
-        PostListAdapter(Context context, List<RSSItem> postList) {
-            mContext = context;
+        static class ViewHolder extends RecyclerView.ViewHolder {
+            final ImageView imageView;
+            final TextView primaryTextView;
+            final TextView secondaryTextView;
+            final TextView tertiaryTextView;
+            ViewHolder(View v) {
+                super(v);
+                primaryTextView = (TextView) v.findViewById(R.id.text_primary);
+                secondaryTextView = (TextView) v.findViewById(R.id.text_secondary);
+                tertiaryTextView = (TextView) v.findViewById(R.id.text_tertiary);
+                imageView = (ImageView) v.findViewById(R.id.image_view);
+            }
+        }
+
+        PostListAdapter(List<RSSItem> postList) {
             mPostList = postList;
         }
 
         @Override
-        public int getCount() {
+        public PostListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_post, parent, false);
+            ViewHolder vh = new ViewHolder(v);
+            return vh;
+        }
+
+        @Override
+        public int getItemCount() {
             return mPostList.size();
         }
 
         @Override
-        public Object getItem(int position) {
-            return mPostList.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return 0;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            if (convertView == null) {
-                LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                convertView = inflater.inflate(R.layout.item_post, null);
-            }
+        public void onBindViewHolder(ViewHolder holder, int position) {
             RSSItem item = mPostList.get(position);
-            TextView primaryTextView = (TextView) convertView.findViewById(R.id.text_primary);
-            primaryTextView.setText(item.getTitle());
-            return convertView;
+            holder.primaryTextView.setText(item.getTitle());
+            holder.secondaryTextView.setText(item.getDescription());
+            holder.tertiaryTextView.setText(DateUtils.getRelativeTimeSpanString(
+                    item.getPubDate().getTime(),
+                    new Date().getTime(),
+                    DateUtils.MINUTE_IN_MILLIS));
+            ImageView imageView = holder.imageView;
+            Uri thumbnailUri = null;
+            if (!item.getThumbnails().isEmpty()) {
+                thumbnailUri = item.getThumbnails().get(0).getUrl();
+            }
+            if (thumbnailUri != null) {
+                Picasso.with(imageView.getContext()).load(thumbnailUri).into(imageView);
+            } else {
+                imageView.setImageResource(R.drawable.default_background);
+            }
+
+
         }
+
     }
 }
