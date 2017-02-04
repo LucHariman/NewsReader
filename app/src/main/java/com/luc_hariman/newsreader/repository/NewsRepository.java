@@ -4,11 +4,13 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.text.TextUtils;
 
 import com.luc_hariman.newsreader.model.News;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by luc on 04.02.17.
@@ -32,6 +34,15 @@ public class NewsRepository {
                 News news = new News(cursor.getString(cursor.getColumnIndex("url")));
                 news.setId(cursor.getLong(cursor.getColumnIndex("id")));
                 news.setTitle(cursor.getString(cursor.getColumnIndex("title")));
+                String notify = cursor.getString(cursor.getColumnIndex("notify"));
+                Integer notificationHour = null, notificationMinute = null;
+                if (!TextUtils.isEmpty(notify)) {
+                    String[] time = notify.split(":");
+                    notificationHour = Integer.valueOf(time[0]);
+                    notificationMinute = Integer.valueOf(time[1]);
+                }
+                news.setNotificationHour(notificationHour);
+                news.setNotificationMinute(notificationMinute);
                 result.add(news);
             } while (cursor.moveToNext());
         }
@@ -44,6 +55,11 @@ public class NewsRepository {
         ContentValues values = new ContentValues();
         values.put("url", news.getUrl());
         values.put("title", news.getTitle());
+        String notify = null;
+        if (news.isNotificationEnabled()) {
+            notify = String.format(Locale.getDefault(), "%d:%d", news.getNotificationHour(), news.getNotificationMinute());
+        }
+        values.put("notify", notify);
         SQLiteDatabase db = mDatabaseHandler.getWritableDatabase();
         Long id = news.getId();
         if (id == null) {

@@ -24,6 +24,8 @@ public class News {
     private String description;
     private Uri link;
     private List<RSSItem> posts = new ArrayList<>();
+    private Integer notificationHour;
+    private Integer notificationMinute;
 
     public News(String url) {
         this.url = url;
@@ -59,6 +61,26 @@ public class News {
 
     public List<RSSItem> getPosts() {
         return posts;
+    }
+
+    public Integer getNotificationHour() {
+        return notificationHour;
+    }
+
+    public void setNotificationHour(Integer notificationHour) {
+        this.notificationHour = notificationHour;
+    }
+
+    public Integer getNotificationMinute() {
+        return notificationMinute;
+    }
+
+    public void setNotificationMinute(Integer notificationMinute) {
+        this.notificationMinute = notificationMinute;
+    }
+
+    public boolean isNotificationEnabled() {
+        return notificationHour != null && notificationMinute != null;
     }
 
     public void load(@NonNull final ResultListener resultListener) {

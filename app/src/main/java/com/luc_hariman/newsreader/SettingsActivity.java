@@ -2,25 +2,29 @@ package com.luc_hariman.newsreader;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.URLUtil;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.TimePicker;
 
 import com.luc_hariman.newsreader.model.News;
 import com.luc_hariman.newsreader.repository.NewsRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by luc on 04.02.17.
@@ -74,10 +78,36 @@ public class SettingsActivity extends AppCompatActivity {
     private void openNewsSettingsDialog(final News newsToEdit) {
         View dialogView = this.getLayoutInflater().inflate(R.layout.alert_edit_news, null);
         final TextView urlTextView = (TextView) dialogView.findViewById(R.id.edit_url);
+        final CheckBox notifyCheckBox = (CheckBox) dialogView.findViewById(R.id.checkBox_notify);
+        final TimePicker timePicker = (TimePicker) dialogView.findViewById(R.id.timePicker);
+        timePicker.setEnabled(false);
+        timePicker.setEnabled(false);
+        notifyCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                timePicker.setEnabled(isChecked);
+            }
+        });
+        int hour = 9, minute = 0;
+
         if (newsToEdit != null) {
             urlTextView.setText(newsToEdit.getUrl());
             urlTextView.setEnabled(false);
+            if (newsToEdit.isNotificationEnabled()) {
+                hour = newsToEdit.getNotificationHour();
+                minute = newsToEdit.getNotificationMinute();
+                notifyCheckBox.setChecked(true);
+            }
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            timePicker.setHour(hour);
+            timePicker.setMinute(minute);
+        } else {
+            timePicker.setCurrentHour(hour);
+            timePicker.setCurrentMinute(minute);
+        }
+
         new AlertDialog.Builder(this)
                 .setView(dialogView)
                 .setTitle(newsToEdit == null ? getString(R.string.add_subscription) : newsToEdit.getTitle())
@@ -90,7 +120,18 @@ public class SettingsActivity extends AppCompatActivity {
                         }
 
                         News news = newsToEdit == null ? new News(url) : newsToEdit;
-                        // TODO: Set other properties
+                        Integer hour = null, minute = null;
+                        if (notifyCheckBox.isChecked()) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                hour = timePicker.getHour();
+                                minute = timePicker.getMinute();
+                            } else {
+                                hour = timePicker.getCurrentHour();
+                                minute = timePicker.getCurrentMinute();
+                            }
+                        }
+                        news.setNotificationHour(hour);
+                        news.setNotificationMinute(minute);
                         mNewsRepository.save(news);
                         refreshList();
                         news.load(new News.ResultListener() {
@@ -128,7 +169,7 @@ public class SettingsActivity extends AppCompatActivity {
         private final List<News> mNewsList;
         private final Context mContext;
 
-        public NewsListAdapter(Context context, List<News> newsList) {
+        NewsListAdapter(Context context, List<News> newsList) {
             super();
             mContext = context;
             mNewsList = newsList;
@@ -158,8 +199,29 @@ public class SettingsActivity extends AppCompatActivity {
             News item = mNewsList.get(position);
             TextView primaryTextView = (TextView) convertView.findViewById(R.id.text_primary);
             TextView secondaryTextView = (TextView) convertView.findViewById(R.id.text_secondary);
+            View notificationView = convertView.findViewById(R.id.view_notification);
+            TextView notificationTimeTextView = (TextView) convertView.findViewById(R.id.text_notification_time);
             primaryTextView.setText(item.getTitle());
             secondaryTextView.setText(item.getUrl());
+            if (item.isNotificationEnabled()) {
+                notificationView.setVisibility(View.VISIBLE);
+                int hour = item.getNotificationHour();
+                int minute = item.getNotificationMinute();
+                boolean isPm = hour >= 12;
+                hour %= 12;
+                if (hour == 0) {
+                    hour = 12;
+                }
+                notificationTimeTextView.setText(String.format(
+                        Locale.getDefault(),
+                        "%d:%02d %s",
+                        hour,
+                        minute,
+                        isPm ? "PM" : "AM"
+                ));
+            } else {
+                notificationView.setVisibility(View.GONE);
+            }
             return convertView;
         }
     }

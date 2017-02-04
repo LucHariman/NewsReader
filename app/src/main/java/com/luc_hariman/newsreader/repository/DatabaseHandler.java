@@ -11,7 +11,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHandler extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "news_reader_db";
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
 
     private static DatabaseHandler mInstance;
 
@@ -28,7 +28,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE News (id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT UNIQUE, title TEXT)");
+        db.execSQL("CREATE TABLE News (id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT UNIQUE, title TEXT, notify TEXT)");
     }
 
     @Override

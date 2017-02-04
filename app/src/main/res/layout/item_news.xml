@@ -7,13 +7,44 @@
     android:paddingTop="16dp"
     android:paddingBottom="16dp">
 
-
-    <TextView
-        android:hint="@string/unknown"
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/text_primary"
-        android:textAppearance="@android:style/TextAppearance.Medium" />
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:hint="@string/unknown"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:id="@+id/text_primary"
+            android:textAppearance="@android:style/TextAppearance.Medium" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/view_notification">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_alarm_black_24dp"/>
+
+            <TextView
+                android:id="@+id/text_notification_time"
+                android:layout_marginLeft="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@android:style/TextAppearance.Small"
+                android:text="9:00 AM"/>
+
+        </LinearLayout>
+
+
+    </LinearLayout>
 
     <TextView
         android:text="http://my.rss/feed.xml"
