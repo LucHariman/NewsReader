@@ -1,6 +1,5 @@
 package com.luc_hariman.newsreader;
 
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -10,21 +9,17 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.luc_hariman.newsreader.model.News;
@@ -77,6 +72,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         mAdapter = new PostListAdapter(postList);
         recyclerView.setAdapter(mAdapter);
+        mAdapter.setOnItemClickListener(new PostListAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(RSSItem item) {
+                startActivity(new Intent(MainActivity.this, WebViewActivity.class)
+                        .putExtra(WebViewActivity.POST_URL, item.getLink().toString())
+                        .putExtra(WebViewActivity.TITLE, getTitle()));
+            }
+        });
 
     }
 
@@ -112,10 +115,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void setCurrentNewsMenu(NewsMenuHolder holder) {
+        if (currentNewsMenu != null) {
+            currentNewsMenu.getMenuItem().setChecked(false);
+        }
+
         if (!holder.equals(currentNewsMenu)) {
             currentNewsMenu = holder;
             postList.clear();
             mAdapter.notifyDataSetChanged();
+            currentNewsMenu.getMenuItem().setChecked(true);
         }
 
         News selectedNews = currentNewsMenu.getNews();
@@ -148,14 +156,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-
         if (item.getItemId() == R.id.drawer_item_settings) {
             startActivity(new Intent(this, SettingsActivity.class));
         } else {
-            if (currentNewsMenu != null) {
-                currentNewsMenu.getMenuItem().setChecked(false);
-            }
-            item.setChecked(true);
             for (NewsMenuHolder holder : newsMenu) {
                 if (holder.getMenuItem().equals(item)) {
                     setCurrentNewsMenu(holder);
@@ -190,30 +193,70 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static class PostListAdapter extends RecyclerView.Adapter<PostListAdapter.ViewHolder> {
 
         private List<RSSItem> mPostList;
+        private OnItemClickListener mOnItemClickListener;
 
-        static class ViewHolder extends RecyclerView.ViewHolder {
-            final ImageView imageView;
-            final TextView primaryTextView;
-            final TextView secondaryTextView;
-            final TextView tertiaryTextView;
+        static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+            private final ImageView imageView;
+            private final TextView primaryTextView;
+            private final TextView secondaryTextView;
+            private final TextView tertiaryTextView;
+            private RSSItem mItem;
+            private OnItemClickListener mOnItemClickListener;
+
             ViewHolder(View v) {
                 super(v);
                 primaryTextView = (TextView) v.findViewById(R.id.text_primary);
                 secondaryTextView = (TextView) v.findViewById(R.id.text_secondary);
                 tertiaryTextView = (TextView) v.findViewById(R.id.text_tertiary);
                 imageView = (ImageView) v.findViewById(R.id.image_view);
+                v.setOnClickListener(this);
             }
+
+            void bind(RSSItem item, OnItemClickListener onItemClickListener) {
+                this.mItem = item;
+                this.mOnItemClickListener = onItemClickListener;
+                primaryTextView.setText(item.getTitle());
+                secondaryTextView.setText(item.getDescription());
+                tertiaryTextView.setText(DateUtils.getRelativeTimeSpanString(
+                        item.getPubDate().getTime(),
+                        new Date().getTime(),
+                        DateUtils.MINUTE_IN_MILLIS));
+                Uri thumbnailUri = null;
+                if (!item.getThumbnails().isEmpty()) {
+                    thumbnailUri = item.getThumbnails().get(0).getUrl();
+                }
+                if (thumbnailUri != null) {
+                    Picasso.with(imageView.getContext()).load(thumbnailUri).into(imageView);
+                } else {
+                    imageView.setImageResource(R.drawable.default_background);
+                }
+            }
+
+            @Override
+            public void onClick(View v) {
+                if (mOnItemClickListener != null && mItem != null) {
+                    mOnItemClickListener.onItemClick(mItem);
+                }
+            }
+        }
+
+        interface OnItemClickListener {
+            void onItemClick(RSSItem item);
         }
 
         PostListAdapter(List<RSSItem> postList) {
             mPostList = postList;
         }
 
+        void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+            mOnItemClickListener = onItemClickListener;
+        }
+
         @Override
         public PostListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_post, parent, false);
-            ViewHolder vh = new ViewHolder(v);
-            return vh;
+            LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+            View v = inflater.inflate(R.layout.item_post, parent, false);
+            return new ViewHolder(v);
         }
 
         @Override
@@ -224,24 +267,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
             RSSItem item = mPostList.get(position);
-            holder.primaryTextView.setText(item.getTitle());
-            holder.secondaryTextView.setText(item.getDescription());
-            holder.tertiaryTextView.setText(DateUtils.getRelativeTimeSpanString(
-                    item.getPubDate().getTime(),
-                    new Date().getTime(),
-                    DateUtils.MINUTE_IN_MILLIS));
-            ImageView imageView = holder.imageView;
-            Uri thumbnailUri = null;
-            if (!item.getThumbnails().isEmpty()) {
-                thumbnailUri = item.getThumbnails().get(0).getUrl();
-            }
-            if (thumbnailUri != null) {
-                Picasso.with(imageView.getContext()).load(thumbnailUri).into(imageView);
-            } else {
-                imageView.setImageResource(R.drawable.default_background);
-            }
-
-
+            holder.bind(item, mOnItemClickListener);
         }
 
     }
