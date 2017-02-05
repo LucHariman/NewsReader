@@ -218,7 +218,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
             private final ImageView imageView;
             private final TextView primaryTextView;
-            private final TextView secondaryTextView;
             private final TextView tertiaryTextView;
             private RSSItem mItem;
             private OnItemClickListener mOnItemClickListener;
@@ -226,7 +225,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             ViewHolder(View v) {
                 super(v);
                 primaryTextView = (TextView) v.findViewById(R.id.text_primary);
-                secondaryTextView = (TextView) v.findViewById(R.id.text_secondary);
                 tertiaryTextView = (TextView) v.findViewById(R.id.text_tertiary);
                 imageView = (ImageView) v.findViewById(R.id.image_view);
                 v.setOnClickListener(this);
@@ -236,7 +234,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 this.mItem = item;
                 this.mOnItemClickListener = onItemClickListener;
                 primaryTextView.setText(item.getTitle());
-                secondaryTextView.setText(item.getDescription());
                 tertiaryTextView.setText(DateUtils.getRelativeTimeSpanString(
                         item.getPubDate().getTime(),
                         new Date().getTime(),

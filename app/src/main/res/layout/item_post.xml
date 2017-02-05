@@ -41,18 +41,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:id="@+id/text_secondary"
-                android:maxLines="3"
-                android:ellipsize="end"
-                android:textAppearance="@android:style/TextAppearance.Small" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
                 android:id="@+id/text_tertiary"
                 android:textAppearance="@android:style/TextAppearance.Small"
-                android:textStyle="italic"
                 android:gravity="right"/>
 
         </LinearLayout>

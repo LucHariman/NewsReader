@@ -67,7 +67,8 @@ public class NotificationService extends IntentService {
                 .putExtra(NewsDetailsActivity.POST_THUMBNAIL, item.getThumbnails().isEmpty() ? null : item.getThumbnails().get(0).toString())
                 .putExtra(NewsDetailsActivity.POST_CONTENT, item.getDescription())
                 .putExtra(NewsDetailsActivity.POST_LINK, item.getLink().toString())
-                .putExtra(NewsDetailsActivity.NEWS_ID, news.getId());
+                .putExtra(NewsDetailsActivity.NEWS_ID, news.getId())
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         if (currentActivity == null || currentActivity instanceof NewsDetailsActivity) {
             NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -78,7 +79,7 @@ public class NotificationService extends IntentService {
                     .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
                     .setVibrate(new long[] { 1000, 1000 } )
                     .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
-                    .setContentIntent(PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT))
+                    .setContentIntent(PendingIntent.getActivity(this, news.getId().intValue(), intent, PendingIntent.FLAG_UPDATE_CURRENT))
                     .build();
             notificationManager.notify(news.getId().intValue(), notification);
         } else {
