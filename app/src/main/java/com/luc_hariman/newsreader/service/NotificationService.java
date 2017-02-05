@@ -7,6 +7,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.provider.Settings;
 import android.support.v7.app.NotificationCompat;
 
@@ -73,7 +74,8 @@ public class NotificationService extends IntentService {
             Notification notification = new NotificationCompat.Builder(this)
                     .setContentTitle(news.getTitle())
                     .setContentText(item.getTitle())
-                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setSmallIcon(R.drawable.ic_rss_feed_black_24dp)
+                    .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
                     .setVibrate(new long[] { 1000, 1000 } )
                     .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
                     .setContentIntent(PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT))
