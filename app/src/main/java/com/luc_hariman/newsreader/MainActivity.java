@@ -20,6 +20,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.luc_hariman.newsreader.model.News;
@@ -34,8 +35,6 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    private static final String TAG = MainActivity.class.getCanonicalName();
-    private Toolbar mToolbar;
     private Menu mMenu;
     private DrawerLayout mDrawerLayout;
     private List<NewsMenuHolder> newsMenu = new ArrayList<>();
@@ -45,6 +44,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private PostListAdapter mAdapter;
     private View mNoSubscriptionView;
     private RecyclerView mRecyclerView;
+    private ProgressBar mProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mNewsRepository = new NewsRepository(this);
 
         setContentView(R.layout.activity_main);
-        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
@@ -88,7 +88,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
 
         mNoSubscriptionView = findViewById(R.id.view_no_subscription);
-
+        mProgressBar = (ProgressBar) findViewById(R.id.progress);
+        mProgressBar.setVisibility(View.GONE);
     }
 
     @Override
@@ -124,6 +125,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         }
 
+        refreshContent();
+    }
+
+    private void refreshContent() {
         if (currentNewsMenu == null) {
             mNoSubscriptionView.setVisibility(View.VISIBLE);
             mRecyclerView.setVisibility(View.INVISIBLE);
@@ -131,8 +136,31 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else {
             mNoSubscriptionView.setVisibility(View.INVISIBLE);
             mRecyclerView.setVisibility(View.VISIBLE);
-        }
+            News selectedNews = currentNewsMenu.getNews();
+            String title = selectedNews.getTitle();
+            if (TextUtils.isEmpty(title)) {
+                title = getString(R.string.app_name);
+            }
+            setTitle(title);
+            mProgressBar.setVisibility(View.VISIBLE);
+            selectedNews.load(new News.ResultListener() {
+                @Override
+                public void onSuccess(News news) {
+                    postList.clear();
+                    postList.addAll(news.getPosts());
+                    mAdapter.notifyDataSetChanged();
+                    mProgressBar.setVisibility(View.GONE);
+                    setTitle(news.getTitle());
+                }
 
+                @Override
+                public void onError(Throwable t) {
+                    t.printStackTrace();
+                    Snackbar.make(findViewById(android.R.id.content), R.string.error_failed_to_load_news, Snackbar.LENGTH_LONG).show();
+                    mProgressBar.setVisibility(View.GONE);
+                }
+            });
+        }
     }
 
     public void onNewSubscriptionClick(View v) {
@@ -151,27 +179,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             mAdapter.notifyDataSetChanged();
             currentNewsMenu.getMenuItem().setChecked(true);
         }
-
-        News selectedNews = currentNewsMenu.getNews();
-        String title = selectedNews.getTitle();
-        if (TextUtils.isEmpty(title)) {
-            title = getString(R.string.app_name);
-        }
-        setTitle(title);
-        selectedNews.load(new News.ResultListener() {
-            @Override
-            public void onSuccess(News news) {
-                postList.clear();
-                postList.addAll(news.getPosts());
-                mAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                t.printStackTrace();
-                Snackbar.make(findViewById(android.R.id.content), R.string.error_failed_to_load_news, Snackbar.LENGTH_LONG).show();
-            }
-        });
     }
 
     @Override
@@ -185,6 +192,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     break;
                 }
             }
+            refreshContent();
         }
         mDrawerLayout.closeDrawers();
         return true;
