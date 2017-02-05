@@ -20,8 +20,10 @@ public class NewsRepository {
 
     private static final String TABLE_NAME = "news";
     private final DatabaseHandler mDatabaseHandler;
+    private final Context mContext;
 
     public NewsRepository(Context context) {
+        mContext = context;
         mDatabaseHandler = DatabaseHandler.getInstance(context);
     }
 
@@ -85,12 +87,14 @@ public class NewsRepository {
             db.update(TABLE_NAME, values, "id = ?", new String[] { String.valueOf(id) });
         }
         db.close();
+        news.updateAlarm(mContext);
     }
 
     public void delete(News news) {
         SQLiteDatabase db = mDatabaseHandler.getWritableDatabase();
         db.delete(TABLE_NAME, "id = ?", new String[] { String.valueOf(news.getId()) });
         db.close();
+        news.removeAlarm(mContext);
     }
 
 }

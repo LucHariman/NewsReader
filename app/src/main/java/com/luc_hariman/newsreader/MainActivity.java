@@ -75,9 +75,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mAdapter.setOnItemClickListener(new PostListAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(RSSItem item) {
-                startActivity(new Intent(MainActivity.this, WebViewActivity.class)
-                        .putExtra(WebViewActivity.POST_URL, item.getLink().toString())
-                        .putExtra(WebViewActivity.TITLE, getTitle()));
+                News news = currentNewsMenu.getNews();
+                Intent intent = new Intent(MainActivity.this, NewsDetailsActivity.class)
+                        .putExtra(NewsDetailsActivity.NEWS_TITLE, news.getTitle())
+                        .putExtra(NewsDetailsActivity.POST_TITLE, item.getTitle())
+                        .putExtra(NewsDetailsActivity.POST_THUMBNAIL, item.getThumbnails().isEmpty() ? null : item.getThumbnails().get(0).toString())
+                        .putExtra(NewsDetailsActivity.POST_CONTENT, item.getDescription())
+                        .putExtra(NewsDetailsActivity.POST_LINK, item.getLink().toString())
+                        .putExtra(NewsDetailsActivity.NEWS_ID, news.getId());
+                startActivity(intent);
             }
         });
 
@@ -137,12 +143,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public void onSuccess(News news) {
                 postList.clear();
                 postList.addAll(news.getPosts());
-                Collections.sort(postList, new Comparator<RSSItem>() {
-                    @Override
-                    public int compare(RSSItem o1, RSSItem o2) {
-                        return o2.getPubDate().compareTo(o1.getPubDate());
-                    }
-                });
                 mAdapter.notifyDataSetChanged();
             }
 

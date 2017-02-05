@@ -62,7 +62,6 @@ public class SettingsActivity extends AppCompatActivity {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 mNewsRepository.delete(news);
-                                news.removeAlarm(SettingsActivity.this);
                                 refreshList();
                             }
                         })
@@ -136,8 +135,6 @@ public class SettingsActivity extends AppCompatActivity {
                         news.setNotificationHour(hour);
                         news.setNotificationMinute(minute);
                         mNewsRepository.save(news);
-
-                        news.updateAlarm(SettingsActivity.this);
 
                         refreshList();
                         news.load(new News.ResultListener() {

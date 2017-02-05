@@ -26,7 +26,8 @@
             android:orientation="horizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/view_notification">
+            android:id="@+id/view_notification"
+            android:gravity="center_vertical">
 
             <ImageView
                 android:layout_width="16dp"

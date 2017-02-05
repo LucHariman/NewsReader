@@ -6,18 +6,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.support.annotation.NonNull;
 
-import com.luc_hariman.newsreader.AlarmReceiver;
-import com.luc_hariman.newsreader.MainActivity;
-import com.luc_hariman.newsreader.SettingsActivity;
+import com.luc_hariman.newsreader.service.NotificationService;
 
 import org.mcsoxford.rss.RSSFeed;
 import org.mcsoxford.rss.RSSItem;
 import org.mcsoxford.rss.RSSReader;
-import org.mcsoxford.rss.RSSReaderException;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -91,35 +90,46 @@ public class News {
         return notificationHour != null && notificationMinute != null;
     }
 
-    public void load(@NonNull final ResultListener resultListener) {
-        new AsyncTask<Object, Object, Object>() {
+    public void load(final ResultListener resultListener) {
+        new AsyncTask<Object, Object, Throwable>() {
 
             @Override
-            protected Object doInBackground(Object... params) {
-                RSSReader reader = new RSSReader();
+            protected Throwable doInBackground(Object... params) {
                 try {
-                    RSSFeed feed = reader.load(url);
-                    return feed;
+                    loadSync();
                 } catch (Throwable t) {
                     return t;
                 }
+                return null;
             }
 
             @Override
-            protected void onPostExecute(Object result) {
-                if (result instanceof RSSFeed) {
-                    RSSFeed feed = (RSSFeed) result;
-                    title = feed.getTitle();
-                    description = feed.getDescription();
-                    link = feed.getLink();
-                    posts.clear();
-                    posts.addAll(feed.getItems());
-                    resultListener.onSuccess(News.this);
-                } else {
-                    resultListener.onError((Throwable) result);
+            protected void onPostExecute(Throwable e) {
+                if (resultListener != null) {
+                    if (e == null) {
+                        resultListener.onSuccess(News.this);
+                    } else {
+                        resultListener.onError(e);
+                    }
                 }
             }
         }.execute();
+    }
+
+    public void loadSync() throws Throwable {
+        RSSReader reader = new RSSReader();
+        RSSFeed feed = reader.load(url);
+        title = feed.getTitle();
+        description = feed.getDescription();
+        link = feed.getLink();
+        posts.clear();
+        posts.addAll(feed.getItems());
+        Collections.sort(posts, new Comparator<RSSItem>() {
+            @Override
+            public int compare(RSSItem o1, RSSItem o2) {
+                return o2.getPubDate().compareTo(o1.getPubDate());
+            }
+        });
     }
 
     public void removeAlarm(Context context) {
@@ -132,13 +142,23 @@ public class News {
 
     public void updateAlarm(Context context) {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(context, AlarmReceiver.class);
-        intent.putExtra(AlarmReceiver.NEWS_ID, id);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+        Intent intent = new Intent(context, NotificationService.class);
+        intent.putExtra(NotificationService.NEWS_ID, id);
+        PendingIntent pendingIntent = PendingIntent.getService(context, id.intValue(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
         if (isNotificationEnabled()) {
-            alarmManager.setInexactRepeating(
+
+            Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.HOUR_OF_DAY, notificationHour);
+            cal.set(Calendar.MINUTE, notificationMinute);
+            cal.set(Calendar.SECOND, 0);
+            if (cal.before(Calendar.getInstance())) {
+                cal.add(Calendar.DATE, 1);
+            }
+
+            alarmManager.setRepeating(
                     AlarmManager.RTC_WAKEUP,
-                    (notificationHour * 60 + notificationMinute) * 60000,
+                    cal.getTimeInMillis(),
                     AlarmManager.INTERVAL_DAY,
                     pendingIntent);
         } else {
