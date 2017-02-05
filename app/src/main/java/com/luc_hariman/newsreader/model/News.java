@@ -172,4 +172,9 @@ public class News {
         void onError(Throwable t);
 
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj) || obj != null && obj instanceof News && id != null && id.equals(((News) obj).getId());
+    }
 }

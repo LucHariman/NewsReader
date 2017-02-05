@@ -11,4 +11,5 @@
     <string name="subscriptions">Subscriptions</string>
     <string name="notify_me">Notify me for latest news everyday at …</string>
     <string name="more">More …</string>
+    <string name="info_no_subscription_set">You have no subscription set.</string>
 </resources>

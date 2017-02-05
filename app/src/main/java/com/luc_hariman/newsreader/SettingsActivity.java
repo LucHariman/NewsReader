@@ -33,6 +33,8 @@ import java.util.Locale;
  */
 public class SettingsActivity extends AppCompatActivity {
 
+    public static final String ADD_SUBSCRIPTION = "ADD_SUBSCRIPTION";
+
     private ListView mListView;
     private NewsRepository mNewsRepository;
     private List<News> newsList = new ArrayList<>();
@@ -159,6 +161,11 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         refreshList();
+        boolean addSubscription = getIntent().getBooleanExtra(ADD_SUBSCRIPTION, false);
+        if (addSubscription) {
+            getIntent().removeExtra(ADD_SUBSCRIPTION);
+            openNewsSettingsDialog(null);
+        }
     }
 
     private void refreshList() {

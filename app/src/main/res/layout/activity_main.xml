@@ -32,6 +32,29 @@
             android:layout_height="match_parent"
             android:paddingTop="?attr/actionBarSize">
 
+            <LinearLayout
+                android:id="@+id/view_no_subscription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/info_no_subscription_set"
+                    android:textAppearance="?android:attr/textAppearanceMedium"/>
+
+                <Button
+                    android:layout_marginTop="8dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/add_subscription"
+                    android:onClick="onNewSubscriptionClick"/>
+
+            </LinearLayout>
+
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/recycler_view"
                 android:scrollbars="vertical"

@@ -29,8 +29,6 @@ import com.squareup.picasso.Picasso;
 import org.mcsoxford.rss.RSSItem;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -45,6 +43,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private NewsRepository mNewsRepository;
     private List<RSSItem> postList = new ArrayList<>();
     private PostListAdapter mAdapter;
+    private View mNoSubscriptionView;
+    private RecyclerView mRecyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,11 +67,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mDrawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
 
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mAdapter = new PostListAdapter(postList);
-        recyclerView.setAdapter(mAdapter);
+        mRecyclerView.setAdapter(mAdapter);
         mAdapter.setOnItemClickListener(new PostListAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(RSSItem item) {
@@ -86,6 +86,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 startActivity(intent);
             }
         });
+
+        mNoSubscriptionView = findViewById(R.id.view_no_subscription);
 
     }
 
@@ -104,6 +106,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         List<News> newsList = mNewsRepository.getAll();
 
+        if (currentNewsMenu != null && !newsList.contains(currentNewsMenu.getNews())) {
+            currentNewsMenu = null;
+        }
+
         int itemId = 1001;
         for (News news : newsList) {
             String title = news.getTitle();
@@ -118,6 +124,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         }
 
+        if (currentNewsMenu == null) {
+            mNoSubscriptionView.setVisibility(View.VISIBLE);
+            mRecyclerView.setVisibility(View.INVISIBLE);
+            setTitle(R.string.app_name);
+        } else {
+            mNoSubscriptionView.setVisibility(View.INVISIBLE);
+            mRecyclerView.setVisibility(View.VISIBLE);
+        }
+
+    }
+
+    public void onNewSubscriptionClick(View v) {
+        startActivity(new Intent(this, SettingsActivity.class)
+            .putExtra(SettingsActivity.ADD_SUBSCRIPTION, true));
     }
 
     private void setCurrentNewsMenu(NewsMenuHolder holder) {
