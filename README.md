@@ -11,8 +11,6 @@ A simple RSS feed subscription manager.
 
 <img src="screenshots/Screenshot_20170205-181314.png" width="256"/>
 
-<img src="screenshots/Screenshot_20170205-181314.png" width="256" />
-
 <img src="screenshots/Screenshot_20170205-181322.png" width="256" />
 
 <img src="screenshots/Screenshot_20170205-181335.png" width="256" />
