@@ -9,18 +9,20 @@ A simple RSS feed subscription manager.
 
 ## Screenshots
 
-![](screenshots/Screenshot_20170205-181314.png)
+<img src="screenshots/Screenshot_20170205-181314.png" width="256"/>
 
-![](screenshots/Screenshot_20170205-181322.png)
+<img src="screenshots/Screenshot_20170205-181314.png" width="256" />
 
-![](screenshots/Screenshot_20170205-181335.png)
+<img src="screenshots/Screenshot_20170205-181322.png" width="256" />
 
-![](screenshots/Screenshot_20170205-181344.png)
+<img src="screenshots/Screenshot_20170205-181335.png" width="256" />
 
-![](screenshots/Screenshot_20170205-181354.png)
+<img src="screenshots/Screenshot_20170205-181344.png" width="256" />
 
-![](screenshots/Screenshot_20170205-181411.png)
+<img src="screenshots/Screenshot_20170205-181354.png" width="256" />
 
-![](screenshots/Screenshot_20170205-181433.png)
+<img src="screenshots/Screenshot_20170205-181411.png" width="256" />
 
-![](screenshots/Screenshot_20170205-181444.png)
+<img src="screenshots/Screenshot_20170205-181433.png" width="256" />
+
+<img src="screenshots/Screenshot_20170205-181444.png" width="256" />
